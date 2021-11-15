@@ -5,3 +5,5 @@ Kurssin viikottaiset tehtävät.
 ##
 
 - [Viikko 1](/viikko1)
+- [Viikko 2](/viikko2)
+
