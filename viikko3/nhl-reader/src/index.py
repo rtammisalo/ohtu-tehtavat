@@ -2,6 +2,7 @@ import time
 import requests
 from player import Player
 
+
 def main():
     url = "https://nhlstatisticsforohtu.herokuapp.com/players"
     response = requests.get(url).json()
@@ -13,11 +14,13 @@ def main():
 
         players.append(player)
 
-    print(f'Players from FIN {time.asctime()}:')
+    print(f'Players from FIN {time.asctime()}:\n')
 
-    for player in players:
-        if player.nationality == 'FIN':
-            print(player)
+    for player in filter(lambda player: player.nationality == 'FIN',
+                         sorted(players, key=lambda player: player.goals + player.assists,
+                                reverse=True)):
+        print(player)
+
 
 if __name__ == "__main__":
     main()
