@@ -36,3 +36,11 @@ Go To Register Page
 
 Welcome Page Should Be Open
     Title Should Be  Welcome to Ohtu Application!
+
+Login Should Succeed
+    Main Page Should Be Open
+
+Login Should Fail With Message
+    [Arguments]  ${message}
+    Login Page Should Be Open
+    Page Should Contain  ${message}
