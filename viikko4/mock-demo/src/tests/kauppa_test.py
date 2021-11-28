@@ -55,7 +55,7 @@ class TestKauppa(unittest.TestCase):
         viitegeneraattori_mock = Mock()
 
         # palautetaan aina arvo 55
-        viitegeneraattori_mock.uusi.return_value = 55
+        viitegeneraattori_mock.uusi.return_value = 50
 
         kauppa = Kauppa(pankki_mock, viitegeneraattori_mock)
 
