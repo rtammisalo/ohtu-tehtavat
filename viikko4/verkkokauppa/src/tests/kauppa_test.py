@@ -133,3 +133,74 @@ class TestKauppa(unittest.TestCase):
         self.kauppa.tilimaksu("geddy", "555")
 
         self.pankki_mock.tilisiirto.assert_called_with("geddy", 1, "555", self.kauppa._kaupan_tili, 10)
+
+    def test_edellinen_asiointi_ei_nay_uuden_ostoksen_hinnassa(self):
+        def saldo(tuote):
+            if tuote == 2112:
+                return 13
+
+        def hae_tuote(tuote):
+            if tuote == 2112:
+                return Tuote(2112, "rush", 10)
+
+        self.varasto_mock.saldo.side_effect = saldo
+        self.varasto_mock.hae_tuote.side_effect = hae_tuote
+        self.viitegeneraattori_mock.uusi.return_value = 1
+
+        self.kauppa.aloita_asiointi()
+        self.kauppa.lisaa_koriin(2112)
+        self.kauppa.tilimaksu("geddy", "555")
+        self.pankki_mock.tilisiirto.assert_called_with(ANY, ANY, ANY, ANY, 10)
+
+        self.kauppa.aloita_asiointi()
+        self.kauppa.lisaa_koriin(2112)
+        self.kauppa.lisaa_koriin(2112)
+        self.kauppa.lisaa_koriin(2112)
+        self.kauppa.tilimaksu("neil", "111")
+        self.pankki_mock.tilisiirto.assert_called_with(ANY, ANY, ANY, ANY, 30)
+
+    def test_kauppa_pyytaa_uutta_viitenumeroa_jokaiselle_maksutapahtumalle(self):
+        self.viitegeneraattori_mock = Mock(wraps=Viitegeneraattori())
+        self.kauppa = Kauppa(self.varasto_mock, self.pankki_mock, self.viitegeneraattori_mock)
+
+        def saldo(tuote):
+            if tuote == 2112:
+                return 13
+
+        def hae_tuote(tuote):
+            if tuote == 2112:
+                return Tuote(2112, "rush", 10)
+
+        self.varasto_mock.saldo.side_effect = saldo
+        self.varasto_mock.hae_tuote.side_effect = hae_tuote
+
+        self.kauppa.aloita_asiointi()
+        self.kauppa.lisaa_koriin(2112)
+        self.kauppa.tilimaksu("geddy", "555")
+        self.pankki_mock.tilisiirto.assert_called_with("geddy", 2, "555", self.kauppa._kaupan_tili, 10)
+
+        self.kauppa.aloita_asiointi()
+        self.kauppa.lisaa_koriin(2112)
+        self.kauppa.lisaa_koriin(2112)
+        self.kauppa.lisaa_koriin(2112)
+        self.kauppa.tilimaksu("neil", "111")
+        self.pankki_mock.tilisiirto.assert_called_with("neil", 3, "111", self.kauppa._kaupan_tili, 30)
+        self.assertEqual(self.viitegeneraattori_mock.uusi.call_count, 2)
+
+    def test_ostoskorista_tuotteen_palauttaminen_kutsuu_varaston_palauta_varastoon_metodia(self):
+        def saldo(tuote):
+            if tuote == 2112:
+                return 13
+
+        def hae_tuote(tuote):
+            if tuote == 2112:
+                return Tuote(2112, "rush", 10)
+
+        self.varasto_mock.saldo.side_effect = saldo
+        self.varasto_mock.hae_tuote.side_effect = hae_tuote
+
+        self.kauppa.aloita_asiointi()
+        self.kauppa.lisaa_koriin(2112)
+        self.kauppa.poista_korista(2112)
+
+        self.varasto_mock.palauta_varastoon.assert_called_once()
