@@ -1,57 +1,68 @@
+from player import Player
+
+
 class TennisGame:
+    POINTS_TO_SCORE = {0: "Love", 1: "Fifteen", 2: "Thirty", 3: "Forty"}
+    MINIMUM_GAME_POINT = 4
+    TIE_BREAKER = 2
+
     def __init__(self, player1_name, player2_name):
-        self.player1_name = player1_name
-        self.player2_name = player2_name
-        self.m_score1 = 0
-        self.m_score2 = 0
+        self.player1 = Player(player1_name)
+        self.player2 = Player(player2_name)
 
     def won_point(self, player_name):
-        if player_name == "player1":
-            self.m_score1 = self.m_score1 + 1
+        if self.player1.name == player_name:
+            self.player1.won_point()
         else:
-            self.m_score2 = self.m_score2 + 1
+            self.player2.won_point()
+
+    def _get_tie_score(self):
+        if self.player1.points in self.POINTS_TO_SCORE:
+            return f"{self.POINTS_TO_SCORE[self.player1.points]}-All"
+        return "Deuce"
+
+    def _get_victory_score(self):
+        player = self._get_winning_player()
+        return f"Win for {player.name}"
+
+    def _get_advantage_score(self):
+        if self.player1.points > self.player2.points:
+            player = self.player1
+        else:
+            player = self.player2
+        return f"Advantage {player.name}"
+
+    def _get_normal_score(self):
+        player1_score = self.POINTS_TO_SCORE[self.player1.points]
+        player2_score = self.POINTS_TO_SCORE[self.player2.points]
+        return f"{player1_score}-{player2_score}"
+
+    def _is_game_over(self):
+        point_difference = abs(self.player1.points - self.player2.points)
+        if point_difference >= self.TIE_BREAKER:
+            return True
+        return False
+
+    def _get_winning_player(self):
+        if self.player1.points > self.player2.points:
+            return self.player1
+        return self.player2
+
+    def _is_tie(self):
+        return self.player1.points == self.player2.points
+
+    def _is_game_point_impossible(self):
+        max_points = max(self.player1.points, self.player2.points)
+        return max_points < self.MINIMUM_GAME_POINT
 
     def get_score(self):
-        score = ""
-        temp_score = 0
+        if self._is_tie():
+            return self._get_tie_score()
 
-        if self.m_score1 == self.m_score2:
-            if self.m_score1 == 0:
-                score = "Love-All"
-            elif self.m_score1 == 1:
-                score = "Fifteen-All"
-            elif self.m_score1 == 2:
-                score = "Thirty-All"
-            elif self.m_score1 == 3:
-                score = "Forty-All"
-            else:
-                score = "Deuce"
-        elif self.m_score1 >= 4 or self.m_score2 >= 4:
-            minus_result = self.m_score1 - self. m_score2
+        if self._is_game_point_impossible():
+            return self._get_normal_score()
 
-            if minus_result == 1:
-                score = "Advantage player1"
-            elif minus_result == -1:
-                score = "Advantage player2"
-            elif minus_result >= 2:
-                score = "Win for player1"
-            else:
-                score = "Win for player2"
-        else:
-            for i in range(1, 3):
-                if i == 1:
-                    temp_score = self.m_score1
-                else:
-                    score = score + "-"
-                    temp_score = self.m_score2
+        if self._is_game_over():
+            return self._get_victory_score()
 
-                if temp_score == 0:
-                    score = score + "Love"
-                elif temp_score == 1:
-                    score = score + "Fifteen"
-                elif temp_score == 2:
-                    score = score + "Thirty"
-                elif temp_score == 3:
-                    score = score + "Forty"
-
-        return score
+        return self._get_advantage_score()
