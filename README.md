@@ -10,3 +10,4 @@ Kurssin viikottaiset tehtävät.
 - [Viikko 4](/viikko4)
 - [Viikko 5](/viikko5)
 - [Viikko 6](/viikko6), [PULL.md](PULL.md)
+- [Viikko 7](/viikko7), [MERGE.md](MERGE.md)
